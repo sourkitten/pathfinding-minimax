@@ -62,9 +62,24 @@ public class Exercise1 {
 	{
 		float cost = Math.abs( (boardGet(robot.X, robot.Y) - boardGet(X, Y)) );
 
-		System.out.println(cost);
+		//System.out.println(cost);
 
 		if ((robot.X != X) & (robot.Y != Y)){
+			cost += 0.5;
+		}
+		else
+			cost++;
+
+		return cost;
+	}
+	
+	private static float moveCost(Coords initial, int X, int Y)
+	{
+		float cost = Math.abs( (boardGet(initial.X, initial.Y) - boardGet(X, Y)) );
+
+		//System.out.println(cost);
+
+		if ((initial.X != X) & (initial.Y != Y)){
 			cost += 0.5;
 		}
 		else
@@ -96,17 +111,51 @@ public class Exercise1 {
 		return legalmove;
 	}
 
-	private static void addElement(int activePaths)
+	private static ArrayList<Coords> getNearestFreeBlocks(Coords curr)
 	{
-		;
+		ArrayList<Coords> nearestBlocks = new ArrayList<Coords>();
+		for (int x = -1; x < 2; x++)
+		{
+			for (int y = -1; y < 2; y++)
+			{
+				// Node not ( "self" or "obstacle" or "out of board" )
+				int absx = curr.X + x; int absy = curr.Y + y;
+				if (!( ((x == 0) && (y == 0)) || ((absx < 0) || (absy < 0) || (absy > N) || (absy > N)) )) {
+					if (boardGet(absx, absy) != 0) {
+						nearestBlocks.add(new Coords(absx, absy, moveCost(curr, absx, absy)));
+					}
+				}
+			}
+		}
+		
+		return nearestBlocks;
 	}
-
+	
+	private static String printPath(ArrayList<Coords> path)
+	{
+		String toString = "";
+		for (int i = 0; i < path.size(); i++)
+		{
+			toString += path.get(i).toString() + "\n";
+		}
+		return toString;
+	}
+	
 	// UCS search algorithm
 	private static void UCS(Coords finalStates[])
 	{
-		ArrayList<Coords> path = new ArrayList<Coords>();
+		
 		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
-
+		
+		// create initial node
+		ArrayList<Coords> path = new ArrayList<Coords>();
+		path.add(robot); robot.cost = 0;
+		activePaths.add(path);
+		
+		for (int i = 0; i < activePaths.size(); i++)
+		{
+			activePaths.get(i);
+		}
 		
 	}
 
@@ -115,9 +164,10 @@ public class Exercise1 {
 		makeBoard();
 		printBoard();
 		robot.setCoords(0, 0);
+		System.out.println(printPath(getNearestFreeBlocks(robot)));
 		System.out.println("Cost: " + moveCost(1, 1) + " | " + moveRobot(1, 1));
 		printBoard();
-
+		System.out.println(printPath(getNearestFreeBlocks(robot)));
 	}
 
 }
