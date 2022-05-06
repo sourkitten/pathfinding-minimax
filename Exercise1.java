@@ -51,7 +51,40 @@ public class Exercise1 {
 		System.out.println("X value: " + boardGet(robot.X, robot.Y) + "\n");
 	}
 
+	
+	private static void printBoard(Coords[] finalStates)
+	{
+		int finalStateValue = 0;
+		for (int x = 0; x < N; x++)
+	    {
+	   		for (int y = 0; y < N; y++)
+	    	{
+	   			// check if its a final state
+	   			boolean finalState = false;
+	   			for (int i = 0; i < finalStates.length; i++)
+	   			{
+	   				if ( (finalStates[i].X == x) && (finalStates[i].Y == y) )
+	   				{
+	   					finalState = true;
+	   					finalStateValue = boardGet(x, y);
+	   				}
+	   			}
+				if ((robot.X == x) && (robot.Y == y)) {
+					System.out.print("X "); // shows current robot position
+				} else if (finalState) {
+					System.out.print("F "); // shows final state position
+	    		} else {
+					System.out.print(boardGet(x, y) + " ");
+				}
+			}
+		System.out.println();
+		
+		}
 
+		System.out.println("X value: " + boardGet(robot.X, robot.Y));
+		System.out.println("F value: " + finalStateValue + "\n");
+	}
+	
 
 	/* calculates the move cost from a position to another position {X,Y}
 	 * 
@@ -120,9 +153,10 @@ public class Exercise1 {
 			{
 				// Node not ( "self" or "obstacle" or "out of board" )
 				int absx = curr.X + x; int absy = curr.Y + y;
-				if (!( ((x == 0) && (y == 0)) || ((absx < 0) || (absy < 0) || (absy > N) || (absy > N)) )) {
+				if (!( ((x == 0) && (y == 0)) || ((absx < 0) || (absy < 0) || (absx >= N) || (absy >= N)) )) {
 					if (boardGet(absx, absy) != 0) {
-						nearestBlocks.add(new Coords(absx, absy, moveCost(curr, absx, absy)));
+						// Add previous node's cost to new nodes
+						nearestBlocks.add(new Coords(absx, absy, curr.cost + moveCost(curr, absx, absy)));
 					}
 				}
 			}
@@ -141,22 +175,133 @@ public class Exercise1 {
 		return toString;
 	}
 	
-	// UCS search algorithm
-	private static void UCS(Coords finalStates[])
+	private static boolean isInPathList(ArrayList<Coords> list, Coords toCheck)
 	{
-		
+		for (int i = 0; i < list.size(); i++)
+		{
+			if ( (list.get(i).X == toCheck.X) && (list.get(i).Y == toCheck.Y) )
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static ArrayList<Coords> extendPath(ArrayList<Coords> oldPath, Coords newNode)
+	{
+		ArrayList<Coords> newPath = new ArrayList<Coords>();
+		// Add Nodes from old path to new path
+		for (int i = 0; i < oldPath.size(); i++)
+		{
+			newPath.add(oldPath.get(i));
+		}
+		newPath.add(newNode);
+		return newPath;
+	}
+	
+	// UCS search algorithm
+	private static ArrayList<Coords> UCS(Coords finalStates[])
+	{
+		boolean notFinished = true;
 		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
+		ArrayList<ArrayList<Coords>> finalPaths = new ArrayList<ArrayList<Coords>>();
+		ArrayList<Coords> finalPath = null;
 		
 		// create initial node
 		ArrayList<Coords> path = new ArrayList<Coords>();
 		path.add(robot); robot.cost = 0;
 		activePaths.add(path);
 		
-		for (int i = 0; i < activePaths.size(); i++)
+		ArrayList<Coords> visitedNodes = new ArrayList<Coords>();
+		
+		float lowestCost = 500000;
+		int lowestCostIndex = -1;
+		
+		
+		
+		while (notFinished)
 		{
-			activePaths.get(i);
+			// Find cheapest active path
+			for (int i = 0; i < activePaths.size(); i++)
+			{
+				ArrayList<Coords> currentPath = activePaths.get(i);
+				Coords lastNode = currentPath.get(currentPath.size() - 1);
+				
+				if (lastNode.cost < lowestCost)
+				{
+					lowestCost = lastNode.cost;
+					lowestCostIndex = i;
+				}
+			}
+			
+			// Extend that path to its respective children
+			// TODO OutOfBounds Exception
+			ArrayList<Coords> currentPath = activePaths.get(lowestCostIndex);
+			Coords lastNode = currentPath.get(currentPath.size() - 1);
+			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
+			
+			for (int j = 0; j < nearestBlocks.size(); j++) {
+				if (!isInPathList(visitedNodes, nearestBlocks.get(j)))
+				{
+					activePaths.add(extendPath(currentPath, nearestBlocks.get(j)));
+				
+					// If node is a final state
+					boolean isFinalState = false;
+					for (int k = 0; k < finalStates.length; k++)
+					{
+						if ( (nearestBlocks.get(j).X == finalStates[k].X) && (nearestBlocks.get(j).Y == finalStates[k].Y) )
+						{
+							isFinalState = true;
+							break;
+						}
+					}
+					
+					if (isFinalState)
+					{
+						finalPaths.add(activePaths.get(activePaths.size() - 1));
+					}
+				}
+			}
+			
+			visitedNodes.add(lastNode); // Add parent node to visited list
+			activePaths.remove(lowestCostIndex); // Remove parent node
+			
+			if (!finalPaths.isEmpty())
+			{
+				float finalLowestCost = 500000;
+				for (int i = 0; i < finalPaths.size(); i++)
+				{
+					ArrayList<Coords> currPath = finalPaths.get(i);
+					if (currPath.get(currPath.size() - 1).cost < finalLowestCost) 
+					{
+						finalLowestCost = currPath.get(currPath.size() - 1).cost;
+					}
+				}
+				
+				notFinished = false;
+				for (int i = 0; i < activePaths.size(); i++)
+				{
+					ArrayList<Coords> currPath = activePaths.get(i);
+					if (currPath.get(currPath.size() - 1).cost < finalLowestCost) 
+					{
+						notFinished = true;
+					}
+				}
+			}
 		}
 		
+		float finalLowestCost = 500000;
+		for (int i = 0; i < finalPaths.size(); i++)
+		{
+			ArrayList<Coords> currPath = finalPaths.get(i);
+			if (currPath.get(currPath.size() - 1).cost < finalLowestCost) 
+			{
+				finalLowestCost = currPath.get(currPath.size() - 1).cost;
+				finalPath = currPath;
+			}
+		}
+		
+		return finalPath;
 	}
 
 	public static void main(String[] args)
@@ -166,8 +311,18 @@ public class Exercise1 {
 		robot.setCoords(0, 0);
 		System.out.println(printPath(getNearestFreeBlocks(robot)));
 		System.out.println("Cost: " + moveCost(1, 1) + " | " + moveRobot(1, 1));
-		printBoard();
+		
+		Coords[] finalStates = new Coords[2];
+		finalStates[0] = new Coords(3, 3, 0);
+		finalStates[1] = new Coords(3, 3, 0);
+		
+		printBoard(finalStates);
 		System.out.println(printPath(getNearestFreeBlocks(robot)));
+		
+		ArrayList<Coords> path = UCS(finalStates);
+		
+		System.out.println(printPath(path));
+		
 	}
 
 }
