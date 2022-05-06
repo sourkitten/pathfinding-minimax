@@ -7,12 +7,12 @@ public class Exercise1 {
 	static int N = 5;
 	static double p = 0.2;
 
-	Coords robot;
-	int[][] board;
+	private static Coords robot = new Coords();
+	private static int[][] board = new int[N][N];
 
-	Random rand = new Random();
+	private static Random rand = new Random();
 	
-	void makeBoard()
+	private static void makeBoard()
 	{
 		for (int x = 0; x < N; x++)
 		{
@@ -27,21 +27,21 @@ public class Exercise1 {
 	  	}
 	}
 
-	int boardGet(int X, int Y)
+	private static int boardGet(int X, int Y)
 	{
 		return board[X][Y];
 	}
 
-	void printBoard()
+	private static void printBoard()
 	{
 		for (int x = 0; x < N; x++)
 	    {
 	   		for (int y = 0; y < N; y++)
 	    	{
 				if ((robot.X == x) && (robot.Y == y)) {
-					System.out.println("X "); // shows current robot position
+					System.out.print("X "); // shows current robot position
 				} else {
-					System.out.println(boardGet(x, y) );
+					System.out.print(boardGet(x, y) + " ");
 				}
 			}
 		System.out.println();
@@ -58,7 +58,7 @@ public class Exercise1 {
 	 * WARNING!!! DO NOT USE IN FUNCTION OR IT WON'T BEHAVE PROPERLY
 	 * Source: Trust me bro
 	 */
-	float moveCost(int X, int Y)
+	private static float moveCost(int X, int Y)
 	{
 		float cost = Math.abs( (boardGet(robot.X, robot.Y) - boardGet(X, Y)) );
 
@@ -74,7 +74,7 @@ public class Exercise1 {
 	}
 
 	// moves the robot from current position to next position {X,Y} 
-	boolean moveRobot(int X, int Y)
+	private static boolean moveRobot(int X, int Y)
 	{
 		boolean legalmove = true;
 
@@ -96,31 +96,28 @@ public class Exercise1 {
 		return legalmove;
 	}
 
-	void addElement(int activePaths)
+	private static void addElement(int activePaths)
 	{
 		;
 	}
 
 	// UCS search algorithm
-	void UCS(Coords finalStates[])
+	private static void UCS(Coords finalStates[])
 	{
 		ArrayList<Coords> path = new ArrayList<Coords>();
 		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
-		//int path = (int *) malloc(N*N * sizeof(struct Coords));
-		//int** activePaths = (int **) malloc(5 * sizeof(int *));
 
+		
 	}
 
-	int main(int argc, char argv[])
+	public static void main(String[] args)
 	{
 		makeBoard();
 		printBoard();
-
-		float cost = moveCost(1, 1);
-		System.out.println("Cost: " + cost + " | " + moveRobot(1, 1));
+		robot.setCoords(0, 0);
+		System.out.println("Cost: " + moveCost(1, 1) + " | " + moveRobot(1, 1));
 		printBoard();
 
-		return 0;
 	}
 
 }
