@@ -2,8 +2,8 @@ public class Coords
 {
 	public int X;
 	public int Y;
-	public float cost = -1;
-	public float heuristicCost = -1;
+	public float cost = 0;
+	public float heuristicCost = 0;
 	
 	public Coords(int X, int Y, float moveCost) {
 		this.X = X;
@@ -32,18 +32,24 @@ public class Coords
 		this.Y = Y;
 	}
 	
-	@Override
-	public String toString() {
-		return "{" + X + ", " + Y + ", " + cost + "}";
+	public String toString(boolean isAStar)
+	{
+		if (isAStar)
+		{
+			return "{" + X + ", " + Y + ", " + cost + ", " + heuristicCost + "}";
+		} else {
+			return "{" + X + ", " + Y + ", " + cost + "}";
+		}
+		
 	}
 }
 
 
-/*  1  3  0  2  2  
-	1  2  0  4  0  
-	4  0  3  1  4  
-	0  1  4  G1 2  
-	G2 4  4  2  4  
+/*  1  1  1  1  1  
+	4  0  0  0  1  
+	1  0  0  0  1  
+	4  0  0  0  1  
+	G1 0  0  0  1  
  * 
  * 0,1
  * 3,3

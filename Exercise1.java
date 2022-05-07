@@ -1,11 +1,12 @@
 import java.util.Random;
+import java.util.Scanner;
 import java.lang.Math;
 import java.util.ArrayList;
 
 public class Exercise1 {
 
-	static int N = 5;
-	static double p = 0.2;
+	private static int N = 10;
+	private static double p = 0.2;
 
 	private static Coords robot = new Coords();
 	private static int[][] board = new int[N][N];
@@ -42,35 +43,15 @@ public class Exercise1 {
 	{
 		return board[X][Y];
 	}
-
-	private static void printBoard()
-	{
-		for (int x = 0; x < N; x++)
-	    {
-	   		for (int y = 0; y < N; y++)
-	    	{
-				if ((robot.X == x) && (robot.Y == y)) {
-					System.out.print("X "); // shows current robot position
-				} else {
-					System.out.print(boardGet(x, y) + " ");
-				}
-			}
-		System.out.println();
-		
-		}
-
-		System.out.println("X value: " + boardGet(robot.X, robot.Y) + "\n");
-	}
-
 	
 	private static void printBoard(Coords[] finalStates)
 	{
 		int finalStateValues[] = new int[finalStates.length];
 		int finalStateCounter  = 0;
 		
-		for (int x = 0; x < N; x++)
+		for (int y = 0; y < N; y++)
 	    {
-	   		for (int y = 0; y < N; y++)
+	   		for (int x = 0; x < N; x++)
 	    	{
 	   			// check if its a final state
 	   			boolean finalState = false;
@@ -95,34 +76,16 @@ public class Exercise1 {
 		
 		}
 
-		System.out.println("X value: " + boardGet(robot.X, robot.Y));
+		String out = "X val: " + boardGet(robot.X, robot.Y) + ", ";
 		for (int i = 0; i < finalStateValues.length; i++)
 		{
-			System.out.println("G" + (i+1) + " value: " + finalStateValues[i] + "");
+			out += "G" + (i+1) + " val: " + finalStateValues[i] + "";
+			if ( i == (finalStateValues.length - 2) ) {
+				out += ", ";
+			}
 		}
-		System.out.println();
+		System.out.println(out);
 		
-	}
-	
-
-	/* calculates the move cost from a position to another position {X,Y}
-	 * 
-	 * WARNING!!! DO NOT USE IN FUNCTION OR IT WON'T BEHAVE PROPERLY
-	 * Source: Trust me bro
-	 */
-	private static float moveCost(int X, int Y)
-	{
-		float cost = Math.abs( (boardGet(robot.X, robot.Y) - boardGet(X, Y)) );
-
-		//System.out.println(cost);
-
-		if ((robot.X != X) & (robot.Y != Y)){
-			cost += 0.5;
-		}
-		else
-			cost++;
-
-		return cost;
 	}
 	
 	private static float moveCost(Coords initial, int X, int Y)
@@ -138,29 +101,6 @@ public class Exercise1 {
 			cost++;
 
 		return cost;
-	}
-
-	// moves the robot from current position to next position {X,Y} 
-	private static boolean moveRobot(int X, int Y)
-	{
-		boolean legalmove = true;
-
-		// Check if move is legal
-		if ( (Math.abs(robot.X - X) > 1) || (Math.abs(robot.Y - Y) > 1) )
-			legalmove = false; // move is longer than one square away in either axis
-		else if ( boardGet(X, Y) == 0 )
-			legalmove = false; // next block is NOT free
-
-		// Move if legal
-		if ( legalmove )
-		{
-			robot.X = X;
-			robot.Y = Y;
-		} else {
-			System.err.println("Move from {" + robot.X + "," + robot.Y + "}:" + boardGet(robot.X, robot.Y) + " to {" + X + "," + Y + "}:" + boardGet(X, Y) + " illegal!");
-		}
-		
-		return legalmove;
 	}
 
 	private static ArrayList<Coords> getNearestFreeBlocks(Coords curr)
@@ -184,12 +124,18 @@ public class Exercise1 {
 		return nearestBlocks;
 	}
 	
-	private static String printPath(ArrayList<Coords> path)
+	private static String printPath(ArrayList<Coords> path, boolean isAStar)
 	{
 		String toString = "";
+		if (isAStar) {
+			toString = "\n{X, Y, cost, heuristic}";
+		} else {
+			toString = "\n{X, Y, cost}";
+		}
+		
 		for (int i = 0; i < path.size(); i++)
 		{
-			toString += path.get(i).toString() + "\n";
+			toString += "\n" + path.get(i).toString(isAStar);
 		}
 		return toString;
 	}
@@ -221,10 +167,7 @@ public class Exercise1 {
 	// UCS search algorithm
 	private static ArrayList<Coords> UCS(Coords finalStates[])
 	{
-		boolean notFinished = true;
 		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
-		ArrayList<ArrayList<Coords>> finalPaths = new ArrayList<ArrayList<Coords>>();
-		ArrayList<Coords> finalPath = null;
 		
 		// create initial node
 		ArrayList<Coords> path = new ArrayList<Coords>();
@@ -234,8 +177,15 @@ public class Exercise1 {
 		ArrayList<Coords> visitedNodes = new ArrayList<Coords>();
 		
 		
-		while (notFinished)
+		while (true)
 		{
+			// Check if there are no active paths
+			if (activePaths.size() == 0)
+			{
+				System.err.println("No path to final states!!");
+				return new ArrayList<Coords>();
+			}
+
 			// Find cheapest active path
 			float lowestCost = N*N*5;
 			int lowestCostIndex = -1;
@@ -250,91 +200,43 @@ public class Exercise1 {
 					lowestCostIndex = i;
 				}
 			}
+			ArrayList<Coords> currentPath = activePaths.get(lowestCostIndex); // cheapest path
 			
-			// Extend that path to its respective children
-			if (activePaths.size() == 0)
+			// check if last node is final state
+			Coords lastNode = currentPath.get(currentPath.size() - 1);
+			for (int k = 0; k < finalStates.length; k++)
 			{
-				System.err.println("No path to final states!!");
-				return new ArrayList<Coords>();
+				if ( (lastNode.X == finalStates[k].X) && (lastNode.Y == finalStates[k].Y) )
+				{
+					return currentPath;
+				}
 			}
 			
-			ArrayList<Coords> currentPath = activePaths.get(lowestCostIndex);
-			Coords lastNode = currentPath.get(currentPath.size() - 1);
-			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
-			
 			// extend last node to its children
+			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
 			for (int j = 0; j < nearestBlocks.size(); j++) {
 				if (!isInPathList(visitedNodes, nearestBlocks.get(j)))
 				{
 					activePaths.add(extendPath(currentPath, nearestBlocks.get(j)));
-				
-					// If node is a final state
-					boolean isFinalState = false;
-					for (int k = 0; k < finalStates.length; k++)
-					{
-						if ( (nearestBlocks.get(j).X == finalStates[k].X) && (nearestBlocks.get(j).Y == finalStates[k].Y) )
-						{
-							isFinalState = true;
-							break;
-						}
-					}
-					
-					if (isFinalState)
-					{
-						finalPaths.add(activePaths.get(activePaths.size() - 1));
-					}
 				}
 			}
 			
 			visitedNodes.add(lastNode); // Add parent node to visited list
 			activePaths.remove(lowestCostIndex); // Remove parent node
-			
-			if (!finalPaths.isEmpty())
-			{
-				float finalLowestCost = N*N*5;
-				for (int i = 0; i < finalPaths.size(); i++)
-				{
-					ArrayList<Coords> currPath = finalPaths.get(i);
-					if (currPath.get(currPath.size() - 1).cost < finalLowestCost) 
-					{
-						finalLowestCost = currPath.get(currPath.size() - 1).cost;
-					}
-				}
-				
-				notFinished = false;
-				for (int i = 0; i < activePaths.size(); i++)
-				{
-					ArrayList<Coords> currPath = activePaths.get(i);
-					if (currPath.get(currPath.size() - 1).cost < finalLowestCost) 
-					{
-						notFinished = true;
-					}
-				}
-			}
 		}
-		
-		float finalLowestCost = 500000;
-		for (int i = 0; i < finalPaths.size(); i++)
-		{
-			ArrayList<Coords> currPath = finalPaths.get(i);
-			if (currPath.get(currPath.size() - 1).cost < finalLowestCost) 
-			{
-				finalLowestCost = currPath.get(currPath.size() - 1).cost;
-				finalPath = currPath;
-			}
-		}
-		
-		return finalPath;
 	}
-
+	
+	// Calculates the heuristic cost from a set of coords to the final state
 	public static float heuristicCost(Coords initial, Coords[] finalStates)
 	{
+		// get lowest heuristic cost
 		float lowestCost = N*N;
 		for (int i = 0; i < finalStates.length; i++)
 		{
 			int diffX = Math.abs(finalStates[i].X - initial.X);
 			int diffY = Math.abs(finalStates[i].Y - initial.Y);
 			int diagonalMove;
+			
 			if (diffX < diffY) {
 				diagonalMove = diffX;
 			} else if (diffX > diffY) {
@@ -342,6 +244,7 @@ public class Exercise1 {
 			} else {
 				diagonalMove = diffX;
 			}
+			
 			float currentCost = diagonalMove*0.5f + Math.abs(diffX - diffY);
 			
 			if (currentCost < lowestCost)
@@ -353,22 +256,28 @@ public class Exercise1 {
 		return lowestCost;
 	}
 	
+	// A* search algorithm
 	public static ArrayList<Coords> AStar(Coords[] finalStates)
 	{
-		boolean notFinished = true;
 		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
-		ArrayList<ArrayList<Coords>> finalPaths = new ArrayList<ArrayList<Coords>>();
-		ArrayList<Coords> finalPath = null;
 		
 		// create initial node
 		ArrayList<Coords> path = new ArrayList<Coords>();
-		path.add(robot); robot.cost = 0; robot.heuristicCost = heuristicCost(robot, finalStates);
+		path.add(robot); robot.cost = 0;
+		robot.heuristicCost = heuristicCost(robot, finalStates);
 		activePaths.add(path);
 		
 		ArrayList<Coords> visitedNodes = new ArrayList<Coords>();
 		
-		while (notFinished)
+		while (true)
 		{
+			// Check if there are no active paths
+			if (activePaths.size() == 0)
+			{
+				System.err.println("No path to final states!!");
+				return new ArrayList<Coords>();
+			}
+			
 			// Find cheapest AND closest to final state active path
 			float lowestTotalCost = N*N*5;
 			int lowestTotalCostIndex = -1;
@@ -383,48 +292,77 @@ public class Exercise1 {
 					lowestTotalCostIndex = i;
 				}
 			}
-			
-			// Extend that path to its respective children
-			if (activePaths.size() == 0)
-			{
-				System.err.println("No path to final states!!");
-				return new ArrayList<Coords>();
-			}
-		
 			ArrayList<Coords> currentPath = activePaths.get(lowestTotalCostIndex);
+			
+			// check if last node is final state
 			Coords lastNode = currentPath.get(currentPath.size() - 1);
+			for (int k = 0; k < finalStates.length; k++)
+			{
+				if ( (lastNode.X == finalStates[k].X) && (lastNode.Y == finalStates[k].Y) )
+				{
+					return currentPath;
+				}
+			}
+			
+			// extend last node to its children
 			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
+			for (int j = 0; j < nearestBlocks.size(); j++) {
+				if (!isInPathList(visitedNodes, nearestBlocks.get(j)))
+				{
+					activePaths.add(extendPath(currentPath, nearestBlocks.get(j)));
+				}
+			}
 			
-			
+			visitedNodes.add(lastNode); // Add parent node to visited list
+			activePaths.remove(lowestTotalCostIndex); // Remove parent node
 		}
-		
-		return null;
 	}
 	
 	public static void main(String[] args)
 	{
-		robot.setCoords(0, 0);
+		Scanner in = new Scanner(System.in);
+		
+		System.out.print("Input the size of the array: ");
+		N = in.nextInt();
+		System.out.print("Input the cell occupation possibility: ");
+		p = in.nextDouble();
+		
+		System.out.print("Input the robot's position (X): ");
+		int X = in.nextInt();
+		System.out.print("Input the robot's position (Y): ");
+		int Y = in.nextInt();
+		robot.setCoords(X, Y);
 		
 		Coords[] finalStates = new Coords[2];
-		finalStates[0] = new Coords(3, 3, 0);
-		finalStates[1] = new Coords(4, 0, 0);
+		System.out.print("Input the first final state position (X): ");
+		X = in.nextInt();
+		System.out.print("Input the first final state position (Y): ");
+		Y = in.nextInt();
+		finalStates[0] = new Coords(X, Y, 0);
+		
+		System.out.print("Input the first final state position (X): ");
+		X = in.nextInt();
+		System.out.print("Input the first final state position (Y): ");
+		Y = in.nextInt();
+		finalStates[1] = new Coords(X, Y, 0);
+		System.out.println();
 		
 		makeBoard(robot, finalStates);
-		//printBoard();
-		//System.out.println(printPath(getNearestFreeBlocks(robot)));
-		//System.out.println("Cost: " + moveCost(1, 1) + " | " + moveRobot(1, 1));
-		
-		
-		//board[0][1] = 0;
-		//board[1][0] = 0;
-		//board[1][1] = 0;
 		printBoard(finalStates);
-		System.out.println(printPath(getNearestFreeBlocks(robot)));
 		
-		ArrayList<Coords> path = UCS(finalStates);
+		long startTime = System.nanoTime(); 
+		ArrayList<Coords> UCSPath = UCS(finalStates);
+		System.out.println(printPath(UCSPath, false));
+	    long endTime = System.nanoTime(); 
+	    System.out.println("UCS method execution time: " + ((endTime - startTime) / 1000000) + " ms");
+	    
+		startTime = System.nanoTime(); 
+	    ArrayList<Coords> AStarPath = AStar(finalStates);
+		System.out.println(printPath(AStarPath, true));
+	    endTime = System.nanoTime(); 
+	    System.out.println("A* method execution time: " + ((endTime - startTime) / 1000000) + " ms");
 		
-		System.out.println(printPath(path));
-		System.out.println(heuristicCost(robot, finalStates));
+		in.close(); // close the scanner
 	}
 
 }
