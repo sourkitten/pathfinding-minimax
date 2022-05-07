@@ -1,3 +1,7 @@
+/* BALLOS   EVANGELOS    4739
+ * GKIOULIS KONSTANTINOS 4654
+ */
+
 import java.util.Random;
 import java.util.Scanner;
 import java.lang.Math;

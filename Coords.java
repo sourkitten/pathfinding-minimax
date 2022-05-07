@@ -1,3 +1,7 @@
+/* BALLOS   EVANGELOS    4739
+ * GKIOULIS KONSTANTINOS 4654
+ */
+
 public class Coords
 {
 	public int X;
