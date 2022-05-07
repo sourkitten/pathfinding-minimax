@@ -5,16 +5,17 @@ import java.util.ArrayList;
 
 public class Exercise1 {
 
-	private static int N = 10;
+	private static int N;
 	private static double p = 0.2;
 
 	private static Coords robot = new Coords();
-	private static int[][] board = new int[N][N];
+	private static int[][] board;
 
 	private static Random rand = new Random();
 	
 	private static void makeBoard(Coords initialState, Coords[] finalStates)
 	{
+		board = new int[N][N];
 		for (int x = 0; x < N; x++)
 		{
 			for (int y = 0; y < N; y++)
@@ -324,8 +325,8 @@ public class Exercise1 {
 		
 		System.out.print("Input the size of the array: ");
 		N = in.nextInt();
-		System.out.print("Input the cell occupation possibility: ");
-		p = in.nextDouble();
+		System.out.print("Input the cell occupation possibility (%): ");
+		p = in.nextDouble() / 100;
 		
 		System.out.print("Input the robot's position (X): ");
 		int X = in.nextInt();
@@ -334,15 +335,15 @@ public class Exercise1 {
 		robot.setCoords(X, Y);
 		
 		Coords[] finalStates = new Coords[2];
-		System.out.print("Input the first final state position (X): ");
+		System.out.print("Input the first  final state position (X): ");
 		X = in.nextInt();
-		System.out.print("Input the first final state position (Y): ");
+		System.out.print("Input the first  final state position (Y): ");
 		Y = in.nextInt();
 		finalStates[0] = new Coords(X, Y, 0);
 		
-		System.out.print("Input the first final state position (X): ");
+		System.out.print("Input the second final state position (X): ");
 		X = in.nextInt();
-		System.out.print("Input the first final state position (Y): ");
+		System.out.print("Input the second final state position (Y): ");
 		Y = in.nextInt();
 		finalStates[1] = new Coords(X, Y, 0);
 		System.out.println();
