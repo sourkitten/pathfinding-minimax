@@ -12,17 +12,28 @@ public class Exercise1 {
 
 	private static Random rand = new Random();
 	
-	private static void makeBoard()
+	private static void makeBoard(Coords initialState, Coords[] finalStates)
 	{
 		for (int x = 0; x < N; x++)
 		{
 			for (int y = 0; y < N; y++)
 			{
+				// Check if tile is initial or final state
+				// !! This ensures that the initial and final state tiles WON'T be occupied
+				boolean isInitialOrFinalState = (initialState.X == x) && (initialState.Y == y);
+				for (int i = 0; i < finalStates.length; i++)
+				{
+					if ( (finalStates[i].X == x) && (finalStates[i].Y == y) )
+					{
+						isInitialOrFinalState = true;
+					}
+				}
+
 				int r = (rand.nextInt(1000) % (int) (1/p));
-				if (r == 0) // randomly occupy slots ( 0 )
-					board[x][y] = 0; 
-	    		else		// empty slots get assigned a random value 1-4
-	    			board[x][y] = rand.nextInt(4) + 1;
+				if (r != 0 || isInitialOrFinalState) // empty slots get assigned a random value 1-4
+					board[x][y] = rand.nextInt(4) + 1;
+	    		else								 // randomly occupy slots ( 0 )
+	    			board[x][y] = 0; 
 	    	}
 	  	}
 	}
@@ -54,7 +65,9 @@ public class Exercise1 {
 	
 	private static void printBoard(Coords[] finalStates)
 	{
-		int finalStateValue = 0;
+		int finalStateValues[] = new int[finalStates.length];
+		int finalStateCounter  = 0;
+		
 		for (int x = 0; x < N; x++)
 	    {
 	   		for (int y = 0; y < N; y++)
@@ -66,15 +79,16 @@ public class Exercise1 {
 	   				if ( (finalStates[i].X == x) && (finalStates[i].Y == y) )
 	   				{
 	   					finalState = true;
-	   					finalStateValue = boardGet(x, y);
+	   					finalStateValues[finalStateCounter] = boardGet(x, y);
+	   					finalStateCounter++;
 	   				}
 	   			}
 				if ((robot.X == x) && (robot.Y == y)) {
-					System.out.print("X "); // shows current robot position
+					System.out.print("X  "); // shows current robot position
 				} else if (finalState) {
-					System.out.print("F "); // shows final state position
+					System.out.print("G" + (finalStateCounter) + " "); // shows final state position
 	    		} else {
-					System.out.print(boardGet(x, y) + " ");
+					System.out.print(boardGet(x, y) + "  ");
 				}
 			}
 		System.out.println();
@@ -82,7 +96,12 @@ public class Exercise1 {
 		}
 
 		System.out.println("X value: " + boardGet(robot.X, robot.Y));
-		System.out.println("F value: " + finalStateValue + "\n");
+		for (int i = 0; i < finalStateValues.length; i++)
+		{
+			System.out.println("G" + (i+1) + " value: " + finalStateValues[i] + "");
+		}
+		System.out.println();
+		
 	}
 	
 
@@ -214,14 +233,12 @@ public class Exercise1 {
 		
 		ArrayList<Coords> visitedNodes = new ArrayList<Coords>();
 		
-		float lowestCost = 500000;
-		int lowestCostIndex = -1;
-		
-		
 		
 		while (notFinished)
 		{
 			// Find cheapest active path
+			float lowestCost = N*N*5;
+			int lowestCostIndex = -1;
 			for (int i = 0; i < activePaths.size(); i++)
 			{
 				ArrayList<Coords> currentPath = activePaths.get(i);
@@ -235,11 +252,17 @@ public class Exercise1 {
 			}
 			
 			// Extend that path to its respective children
-			// TODO OutOfBounds Exception
+			if (activePaths.size() == 0)
+			{
+				System.err.println("No path to final states!!");
+				return new ArrayList<Coords>();
+			}
+			
 			ArrayList<Coords> currentPath = activePaths.get(lowestCostIndex);
 			Coords lastNode = currentPath.get(currentPath.size() - 1);
 			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
 			
+			// extend last node to its children
 			for (int j = 0; j < nearestBlocks.size(); j++) {
 				if (!isInPathList(visitedNodes, nearestBlocks.get(j)))
 				{
@@ -268,7 +291,7 @@ public class Exercise1 {
 			
 			if (!finalPaths.isEmpty())
 			{
-				float finalLowestCost = 500000;
+				float finalLowestCost = N*N*5;
 				for (int i = 0; i < finalPaths.size(); i++)
 				{
 					ArrayList<Coords> currPath = finalPaths.get(i);
@@ -304,25 +327,104 @@ public class Exercise1 {
 		return finalPath;
 	}
 
+	public static float heuristicCost(Coords initial, Coords[] finalStates)
+	{
+		float lowestCost = N*N;
+		for (int i = 0; i < finalStates.length; i++)
+		{
+			int diffX = Math.abs(finalStates[i].X - initial.X);
+			int diffY = Math.abs(finalStates[i].Y - initial.Y);
+			int diagonalMove;
+			if (diffX < diffY) {
+				diagonalMove = diffX;
+			} else if (diffX > diffY) {
+				diagonalMove = diffY;
+			} else {
+				diagonalMove = diffX;
+			}
+			float currentCost = diagonalMove*0.5f + Math.abs(diffX - diffY);
+			
+			if (currentCost < lowestCost)
+			{
+				lowestCost = currentCost;
+			}
+		}
+		
+		return lowestCost;
+	}
+	
+	public static ArrayList<Coords> AStar(Coords[] finalStates)
+	{
+		boolean notFinished = true;
+		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
+		ArrayList<ArrayList<Coords>> finalPaths = new ArrayList<ArrayList<Coords>>();
+		ArrayList<Coords> finalPath = null;
+		
+		// create initial node
+		ArrayList<Coords> path = new ArrayList<Coords>();
+		path.add(robot); robot.cost = 0; robot.heuristicCost = heuristicCost(robot, finalStates);
+		activePaths.add(path);
+		
+		ArrayList<Coords> visitedNodes = new ArrayList<Coords>();
+		
+		while (notFinished)
+		{
+			// Find cheapest AND closest to final state active path
+			float lowestTotalCost = N*N*5;
+			int lowestTotalCostIndex = -1;
+			for (int i = 0; i < activePaths.size(); i++)
+			{
+				ArrayList<Coords> currentPath = activePaths.get(i);
+				Coords lastNode = currentPath.get(currentPath.size() - 1);
+				
+				if ( (lastNode.cost + lastNode.heuristicCost) < lowestTotalCost )
+				{
+					lowestTotalCost = lastNode.cost + lastNode.heuristicCost;
+					lowestTotalCostIndex = i;
+				}
+			}
+			
+			// Extend that path to its respective children
+			if (activePaths.size() == 0)
+			{
+				System.err.println("No path to final states!!");
+				return new ArrayList<Coords>();
+			}
+		
+			ArrayList<Coords> currentPath = activePaths.get(lowestTotalCostIndex);
+			Coords lastNode = currentPath.get(currentPath.size() - 1);
+			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
+			
+			
+		}
+		
+		return null;
+	}
+	
 	public static void main(String[] args)
 	{
-		makeBoard();
-		printBoard();
 		robot.setCoords(0, 0);
-		System.out.println(printPath(getNearestFreeBlocks(robot)));
-		System.out.println("Cost: " + moveCost(1, 1) + " | " + moveRobot(1, 1));
 		
 		Coords[] finalStates = new Coords[2];
 		finalStates[0] = new Coords(3, 3, 0);
-		finalStates[1] = new Coords(3, 3, 0);
+		finalStates[1] = new Coords(4, 0, 0);
 		
+		makeBoard(robot, finalStates);
+		//printBoard();
+		//System.out.println(printPath(getNearestFreeBlocks(robot)));
+		//System.out.println("Cost: " + moveCost(1, 1) + " | " + moveRobot(1, 1));
+		
+		
+		//board[0][1] = 0;
+		//board[1][0] = 0;
+		//board[1][1] = 0;
 		printBoard(finalStates);
 		System.out.println(printPath(getNearestFreeBlocks(robot)));
 		
 		ArrayList<Coords> path = UCS(finalStates);
 		
 		System.out.println(printPath(path));
-		
+		System.out.println(heuristicCost(robot, finalStates));
 	}
 
 }
