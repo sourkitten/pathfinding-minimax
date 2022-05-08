@@ -217,16 +217,19 @@ public class Exercise1 {
 				}
 			}
 			
-			// extend last node to its children
-			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
-			for (int j = 0; j < nearestBlocks.size(); j++) {
-				if (!isInPathList(visitedNodes, nearestBlocks.get(j)))
+			// check if last node has been visited
+			if (!isInPathList(visitedNodes, lastNode))
+			{
+				// extend last node to its children
+				ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
+				for (int j = 0; j < nearestBlocks.size(); j++)
 				{
 					activePaths.add(extendPath(currentPath, nearestBlocks.get(j)));
 				}
+				
+				visitedNodes.add(lastNode); // Add parent node to visited list
 			}
 			
-			visitedNodes.add(lastNode); // Add parent node to visited list
 			activePaths.remove(lowestCostIndex); // Remove parent node
 		}
 	}
@@ -309,16 +312,18 @@ public class Exercise1 {
 				}
 			}
 			
-			// extend last node to its children
-			ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
-			for (int j = 0; j < nearestBlocks.size(); j++) {
-				if (!isInPathList(visitedNodes, nearestBlocks.get(j)))
+			if (!isInPathList(visitedNodes, lastNode))
+			{
+				// extend last node to its children
+				ArrayList<Coords> nearestBlocks = getNearestFreeBlocks(lastNode);
+				for (int j = 0; j < nearestBlocks.size(); j++)
 				{
 					activePaths.add(extendPath(currentPath, nearestBlocks.get(j)));
 				}
+				
+				visitedNodes.add(lastNode); // Add parent node to visited list
 			}
 			
-			visitedNodes.add(lastNode); // Add parent node to visited list
 			activePaths.remove(lowestTotalCostIndex); // Remove parent node
 		}
 	}
