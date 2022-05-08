@@ -264,7 +264,11 @@ public class Exercise1 {
 		return lowestCost;
 	}
 	
-	// A* search algorithm
+	/**
+	 *  A* search algorithm
+	 * @param finalStates
+	 * @return
+	 */
 	public static ArrayList<Coords> AStar(Coords[] finalStates)
 	{
 		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
