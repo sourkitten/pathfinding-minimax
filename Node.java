@@ -1,52 +1,12 @@
-/* BALLOS   EVANGELOS    4739
- * GKIOULIS KONSTANTINOS 4654
- */
 
-import java.util.Scanner;
-import java.util.Arrays;
-
-
-public class ConnectFour
+public class Node
 {
-	// Storing array as [col][row]
-	private static char[][] board;
-	private static int M, N, K, depth;
-	private static Scanner in = new Scanner(System.in);
+	private char player;
+	private char[][] board;
+	private int M, N, K, depth;
+	public int lastMove;
+	private boolean max;
 	
-	/**
-	 * Creates the board
-	 */
-	public static void MakeBoard()
-	{
-		board = new char[N][M];
-		for (int x = 0; x < N ; x++)
-		{
-			Arrays.fill(board[x], 'E');
-		}
-	}
-	
-	/**
-	 * Prints the board
-	 */
-	public static void PrintBoard()
-	{
-		// Hahaha String manipulation go brrr
-		String out = "";
-		for (int y = 0; y < M ; y++)
-		{
-			for (int x = 0; x < N ; x++)
-			{
-				out += board[x][y] + " ";
-			}
-			out += "\n";
-		}
-		for (int x = 0; x < N ; x++)
-		{
-			out += x + " ";
-		}
-		out += "\n";
-		System.out.println(out);
-	}
 	
 	/**
 	 * Adds player indicator to
@@ -56,7 +16,7 @@ public class ConnectFour
 	 * @param  col the column index
 	 * @return success status
 	 */
-	public static boolean AddToRow(char pIndic, int col)
+	public boolean AddToRow(int col)
 	{
 		if (col < 0 || col > N-1) {
 			System.err.print("Invalid Move! Please input a valid move: ");
@@ -67,27 +27,72 @@ public class ConnectFour
 		{
 			if (board[col][i] == 'E')
 			{
-				board[col][i] = pIndic;
-				return true;
+				board[col][i] = player;
+			return true;
 			}
 		}
 		System.err.println("Board Filled! Please input another move: ");
 		return false;
 	}
 	
-	/**
-	 * Prints a Row to System.out
-	 * @param  row the row index
-	 */
-	public static void PrintRow(int row)
+	public int[] validMoves()
 	{
-		String out = "";
-		for (int i = 0; i < M ; i++)
+		boolean[] isValidMove = new boolean[N];
+		int validMoveCounter = 0;
+		for (int col = 0; col < N; col++) 
 		{
-			out += board[row][i] + "\n";
+			if (board[col][0] == 'E') {
+				isValidMove[col] = true;
+				validMoveCounter++;
+			}
+			
 		}
-		out += "\n";
-		System.out.println(out);
+		
+		int[] validMoves = new int[validMoveCounter];
+		validMoveCounter = 0;
+		for (int row = 0; row < isValidMove.length; row++) 
+		{
+			if (isValidMove[row])
+			{
+				validMoves[validMoveCounter] = row;
+				validMoveCounter++;
+			}
+		}
+		return validMoves;
+	}
+	
+	// TODO KEKW
+	//public boolean isWinningMove(int move)
+	//{
+	//	return Check;
+	//}
+
+	public Node(char[][] board, int m, int n, int k, int depth, boolean max)
+	{
+		if (max) {
+			player = 'O';
+		} else {
+			player = 'X';
+		}
+		//this.board = board.clone();
+		M = m;
+		N = n;
+		K = k;
+		CopyBoard(board);
+		this.depth = depth;
+		this.max = max;
+	}
+	
+	public void CopyBoard(char[][] oldBoard)
+	{
+		board = new char[N][M];
+		for (int y = 0; y < M; y++)
+		{
+			for (int x = 0; x < N; x++)
+			{
+				board[x][y] = oldBoard[x][y];
+			}
+		}
 	}
 	
 	/**
@@ -99,7 +104,7 @@ public class ConnectFour
 	 * @param col the column of the player's position
 	 * @return true if there is a Victory
 	 */
-	public static boolean CheckHorizontal(char player, int row, int depth, int col)
+	public boolean CheckHorizontal(int row, int depth, int col)
 	{
 		
 		int totalFound = 1;
@@ -151,7 +156,7 @@ public class ConnectFour
 	 * @param col the column of the player's position
 	 * @return true if there is a Victory
 	 */
-	public static boolean CheckVertical(char player, int row, int depth, int col)
+	public boolean CheckVertical(int row, int depth, int col)
 	{
 
 		int totalFound = 1;
@@ -203,7 +208,7 @@ public class ConnectFour
 	 * @param col the column of the player's position
 	 * @return true if there is a Victory
 	 */
-	public static boolean CheckDiagonalSlash(char player, int row, int depth, int col)
+	public boolean CheckDiagonalSlash(int row, int depth, int col)
 	{
 
 		int totalFound = 1;
@@ -255,7 +260,7 @@ public class ConnectFour
 	 * @param col the column of the player's position
 	 * @return true if there is a Victory
 	 */
-	public static boolean CheckDiagonalBackslash(char player, int row, int depth, int col)
+	public boolean CheckDiagonalBackslash(int row, int depth, int col)
 	{
 		int totalFound = 1;
 		// check right - upwards
@@ -304,124 +309,95 @@ public class ConnectFour
 	 * @param  col the column of the player's position
 	 * @return true if there is a Victory
 	 */
-	public static boolean CheckVictory(int depth, int col)
+	public boolean CheckVictory(int depth, int col)
 	{
-		char playerIndicator = 'n';
 		int playerRow = 0;
 		// Find highest placed spot in row
 		for (int i = 0; i < M; i++)
 		{
 			if (board[col][i] != 'E')
 			{
-				playerIndicator = board[col][i];
 				playerRow = i;
 				break;
 			}
 		}
 		
-		if (CheckHorizontal(playerIndicator, playerRow, depth, col))
+		if (CheckHorizontal(playerRow, depth, col))
 		{
 			return true;
-		} else if (CheckVertical(playerIndicator, playerRow, depth, col))
+		} else if (CheckVertical(playerRow, depth, col))
 		{
 			return true;
-		} else if (CheckDiagonalSlash(playerIndicator, playerRow, depth, col))
+		} else if (CheckDiagonalSlash(playerRow, depth, col))
 		{
 			return true;
-		} else if (CheckDiagonalBackslash(playerIndicator, playerRow, depth, col))
+		} else if (CheckDiagonalBackslash(playerRow, depth, col))
 		{
 			return true;
 		} 
 		
 		return false;
 	}
-	
-	/**
-	 * Checks if the board is filled.
-	 * Essentially it checks the first row only.
-	 * @return whether the board is filled
-	 */
-	public static boolean isBoardFilled()
-	{
-		// Only the uppermost row needs to be checked
-		for (int col = 0; col < M; col++) 
-		{
-			if (board[col][0] == 'E') {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	/**
-	 * With the help of the sponsor of this video, MINIMAX!!!
-	 * @return
-	 */
-	public static int BestMove()
-	{
-		Node parent = new Node(board, M, N, K, depth, true);
-		return parent.MiniMax(depth);
-		//return parent;
-	}
-	
-	/**
-	 * Plays the game, taking turns between the MiniMax (O) and Player (X)
-	 */
-	public static void PlayGame()
-	{
-		int nextMove;
-		while (true)
-		{
-			// Human's turn
-			System.out.print("Input the column you want to fill: ");
-			nextMove = in.nextInt();
-			if (!AddToRow('X', nextMove)) {
-				nextMove = in.nextInt();
-			}
-			if (CheckVictory(K, nextMove)) {
-				System.out.println("You are victorious");
-				break;
-			} else if (isBoardFilled()) {
-				System.out.println("It's a draw :/");
-				break;
-			}
-			PrintBoard();
 
-			// Robot's turn
-			nextMove = BestMove();
-			AddToRow('O', nextMove);
-			if (CheckVictory(K, nextMove)) {
-				System.out.println("You are NOT victorious. The Cyborg wins");
-				break;
-			} else if (isBoardFilled()) {
-				System.out.println("It's a draw :/");
-				break;
+	
+	/**
+	 * Runs the MiniMax algorithm
+	 * Lose		  : -1
+	 * Draw		  :  0
+	 * No Outcome :  0
+	 * Win		  :  1
+	 * @param currentDepth the current depth. Reduced by one after every branch
+	 * @return the best / worst child node (depending on the player)
+	 */
+	public int MiniMax(int currentDepth)
+	{
+		// Check if player is victorious
+		if (CheckVictory(depth, lastMove))
+		{
+			if (max) {
+				return 1;
+			} else {
+				return -1;
 			}
-			PrintBoard();
 		}
+		
+		// Check if there are any valid moves
+		int[] children = validMoves();
+		if (currentDepth == 0 || children.length == 0)
+		{
+			return 0;
+		}
+		
+		// Get children nodes' scores
+		int[] childrenResults = new int[children.length];
+		for (int i = 0; i < children.length; i++)
+		{
+			Node child = new Node(board, M, N, K, depth, !max);
+			child.AddToRow(children[i]);
+			child.lastMove = children[i];
+			childrenResults[i] = child.MiniMax(currentDepth - 1);
+			
+		}
+		
+		// Compare children nodes' scores and return the best (depending on the player)
+		int value;
+		if (max) {
+			value = -10;
+		} else {
+			value = 10;
+		}
+		for (int i = 0; i < childrenResults.length; i++)
+		{
+			if (max && childrenResults[i] > value)
+			{
+				value = childrenResults[i];
+			} else if ((!max) && childrenResults[i] < value) {
+				value = childrenResults[i];
+			}
+		}
+		
+		// TODO return branch NOT VALUE
+		return value;
 	}
 	
-	public static void main(String[] Args)
-	{	
-		depth = 5;
-		System.out.print("Input the length of the board (N): ");
-		N = in.nextInt();
-		System.out.print("Input the height of the board (M): ");
-		M = in.nextInt();
-		System.out.print("Input the amount required to win (K): ");
-		K = in.nextInt();
-		System.out.println();
-		MakeBoard();
-		PrintBoard();
-		PlayGame();
-		
-		AddToRow('X', 5);
-		AddToRow('O', 3);
-		AddToRow('X', 3);
-		PrintBoard();
-		//System.out.println(BestMove());
-		//AddToRow('O', BestMove());
-		
-		in.close();
-	}
 }
