@@ -3,10 +3,16 @@ public class Node
 {
 	private char player;
 	private char[][] board;
-	private int M, N, K, depth;
+	private int M, N, K;
 	public int lastMove;
 	private boolean max;
+	private boolean isParent = false;
 	
+	
+	public void SetParentNode(boolean parentStatus)
+	{
+		isParent = parentStatus;
+	}
 	
 	/**
 	 * Adds player indicator to
@@ -67,7 +73,7 @@ public class Node
 	//	return Check;
 	//}
 
-	public Node(char[][] board, int m, int n, int k, int depth, boolean max)
+	public Node(char[][] board, int m, int n, int k, boolean max)
 	{
 		if (max) {
 			player = 'O';
@@ -79,7 +85,6 @@ public class Node
 		N = n;
 		K = k;
 		CopyBoard(board);
-		this.depth = depth;
 		this.max = max;
 	}
 	
@@ -352,7 +357,7 @@ public class Node
 	public int MiniMax(int currentDepth)
 	{
 		// Check if player is victorious
-		if (CheckVictory(depth, lastMove))
+		if (CheckVictory(K, lastMove))
 		{
 			if (max) {
 				return 1;
@@ -372,7 +377,7 @@ public class Node
 		int[] childrenResults = new int[children.length];
 		for (int i = 0; i < children.length; i++)
 		{
-			Node child = new Node(board, M, N, K, depth, !max);
+			Node child = new Node(board, M, N, K, !max);
 			child.AddToRow(children[i]);
 			child.lastMove = children[i];
 			childrenResults[i] = child.MiniMax(currentDepth - 1);
@@ -380,7 +385,7 @@ public class Node
 		}
 		
 		// Compare children nodes' scores and return the best (depending on the player)
-		int value;
+		int value, childIndex = 0;
 		if (max) {
 			value = -10;
 		} else {
@@ -388,16 +393,30 @@ public class Node
 		}
 		for (int i = 0; i < childrenResults.length; i++)
 		{
-			if (max && childrenResults[i] > value)
+			if (isParent && (childrenResults[i] > value))
 			{
 				value = childrenResults[i];
-			} else if ((!max) && childrenResults[i] < value) {
+				childIndex = children[i];
+			}
+			else if (!isParent && max && (childrenResults[i] > value))
+			{
 				value = childrenResults[i];
+				childIndex = children[i];
+			}
+			else if (!isParent && !max && (childrenResults[i] < value))
+			{
+				value = childrenResults[i];
+				childIndex = children[i];
 			}
 		}
 		
-		// TODO return branch NOT VALUE
-		return value;
+		// TODO first node should return branch NOT VALUE
+		if (isParent)
+		{
+			return childIndex;
+		} else {
+			return value;
+		}
 	}
 	
 }

@@ -71,7 +71,7 @@ public class ConnectFour
 				return true;
 			}
 		}
-		System.err.println("Board Filled! Please input another move: ");
+		System.err.println("Column Filled! Please input another move: ");
 		return false;
 	}
 	
@@ -359,7 +359,8 @@ public class ConnectFour
 	 */
 	public static int BestMove()
 	{
-		Node parent = new Node(board, M, N, K, depth, true);
+		Node parent = new Node(board, M, N, K, false);
+		parent.SetParentNode(true);
 		return parent.MiniMax(depth);
 		//return parent;
 	}
@@ -375,7 +376,7 @@ public class ConnectFour
 			// Human's turn
 			System.out.print("Input the column you want to fill: ");
 			nextMove = in.nextInt();
-			if (!AddToRow('X', nextMove)) {
+			while (!AddToRow('X', nextMove)) {
 				nextMove = in.nextInt();
 			}
 			if (CheckVictory(K, nextMove)) {
@@ -403,7 +404,7 @@ public class ConnectFour
 	
 	public static void main(String[] Args)
 	{	
-		depth = 5;
+		depth = 2;
 		System.out.print("Input the length of the board (N): ");
 		N = in.nextInt();
 		System.out.print("Input the height of the board (M): ");
