@@ -1,7 +1,14 @@
+package Lab1;
 /* BALLOS   EVANGELOS    4739
  * GKIOULIS KONSTANTINOS 4654
  */
 
+
+/**
+ * A set of coordinates, also referenced as Nodes.
+ * @author cs04739
+ * @author cs04654
+ */
 public class Coords
 {
 	public int X;

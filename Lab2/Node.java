@@ -1,6 +1,18 @@
+package Lab2;
+/* BALLOS   EVANGELOS    4739
+ * GKIOULIS KONSTANTINOS 4654
+ */
 
+
+/**
+ * A simple Class that represents a Node in the MiniMax tree.
+ * Here is the true implementation of the MiniMax algorithm.
+ * @author cs04739
+ * @author cs04654
+ */
 public class Node
 {
+	
 	private char player;
 	private char[][] board;
 	private int M, N, K;
@@ -9,10 +21,17 @@ public class Node
 	private boolean isParent = false;
 	
 	
+	/**
+	 * Mutator to the respective variable.
+	 * Gets used by the ConnectFour.BestMove() method
+	 * to set the parent node status boolean.
+	 * @param parentStatus whether the node is a parent or not
+	 */
 	public void SetParentNode(boolean parentStatus)
 	{
 		isParent = parentStatus;
 	}
+	
 	
 	/**
 	 * Adds player indicator to
@@ -41,6 +60,11 @@ public class Node
 		return false;
 	}
 	
+	
+	/**
+	 * Get the valid moves from the board
+	 * @return array of the valid moves ids (empty column ids)
+	 */
 	public int[] validMoves()
 	{
 		boolean[] isValidMove = new boolean[N];
@@ -67,12 +91,12 @@ public class Node
 		return validMoves;
 	}
 	
-	// TODO KEKW
-	//public boolean isWinningMove(int move)
-	//{
-	//	return Check;
-	//}
-
+	
+	/**
+	 * Node Constructor.
+	 * All variables get passed through from parent Node,
+	 * with max boolean reversed.
+	 */
 	public Node(char[][] board, int m, int n, int k, boolean max)
 	{
 		if (!max) {
@@ -88,6 +112,11 @@ public class Node
 		this.max = max;
 	}
 	
+	
+	/**
+	 * Deep copies the parent board to the current object board
+	 * @param oldBoard board to be copied
+	 */
 	public void CopyBoard(char[][] oldBoard)
 	{
 		board = new char[N][M];
@@ -99,6 +128,7 @@ public class Node
 			}
 		}
 	}
+	
 	
 	/**
 	 * Checks whether there is a victory horizontally
@@ -307,8 +337,9 @@ public class Node
 		
 	}
 	
+	
 	/**
-	 * Checks if there is a victory in the latest move of a column
+	 * Checks if there is a victory in the latest move of a column (highest element in column)
 	 * Calls the respective Check*Direction* functions
 	 * @param  depth how far it should reach
 	 * @param  col the column of the player's position
@@ -317,7 +348,7 @@ public class Node
 	public boolean CheckVictory(int depth, int col)
 	{
 		int playerRow = 0;
-		// Find highest placed spot in row
+		// Find highest placed spot in column
 		for (int i = 0; i < M; i++)
 		{
 			if (board[col][i] != 'E')
@@ -346,17 +377,19 @@ public class Node
 
 	
 	/**
-	 * Runs the MiniMax algorithm
+	 * Implementation of the MiniMax algorithm
+	 * 
+	 * MiniMax values are:
 	 * Lose		  : -1
 	 * Draw		  :  0
 	 * No Outcome :  0
 	 * Win		  :  1
-	 * @param currentDepth the current depth. Reduced by one after every branch
-	 * @return the best / worst child node (depending on the player)
+	 * @param currentDepth the current depth. Reduced by one after every level
+	 * @return the min / max child node value (move number for the parent)
 	 */
 	public int MiniMax(int currentDepth)
 	{
-		// Check if player is victorious
+		// Check if move from the !!PARENT NODE!! is victorious
 		if (CheckVictory(K, lastMove))
 		{
 			if (!max) {
@@ -373,7 +406,7 @@ public class Node
 			return 0;
 		}
 		
-		// Get children nodes' scores
+		// Separate valid moves into child nodes - branches and retrieve their scores
 		int[] childrenResults = new int[children.length];
 		for (int i = 0; i < children.length; i++)
 		{
@@ -384,7 +417,7 @@ public class Node
 			
 		}
 		
-		// Compare children nodes' scores and return the best (depending on the player)
+		// Compare children nodes' scores and find the min / max (depending on the player)
 		int value, childIndex = 0;
 		if (max) {
 			value = -10;
@@ -410,12 +443,13 @@ public class Node
 			}
 		}
 
-
+		
+		
 		if (isParent)
 		{
-			return childIndex;
+			return childIndex; // return best move index if parent
 		} else {
-			return value;
+			return value; // return value if child / branch
 		}
 	}
 	

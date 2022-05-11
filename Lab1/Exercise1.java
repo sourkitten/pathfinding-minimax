@@ -1,22 +1,36 @@
+package Lab1;
 /* BALLOS   EVANGELOS    4739
  * GKIOULIS KONSTANTINOS 4654
  */
+
 
 import java.util.Random;
 import java.util.Scanner;
 import java.lang.Math;
 import java.util.ArrayList;
 
+/**
+ * An implementation of the UCS and A* search algorithms.
+ * @author cs04739
+ * @author cs04654
+ */
 public class Exercise1 {
 
 	private static int N;
-	private static double p = 0.2;
+	private static int p;
 
 	private static Coords robot = new Coords();
 	private static int[][] board;
 
 	private static Random rand = new Random();
 	
+	
+	/**
+	 * Creates the board with each block having a p% chance of being a wall (0)
+	 * and if not a wall they have a value ranging from 1 to 4. Think of it like height
+	 * @param initialState the robot's initial state
+	 * @param finalStates the final - goal states
+	 */
 	private static void makeBoard(Coords initialState, Coords[] finalStates)
 	{
 		board = new int[N][N];
@@ -35,20 +49,31 @@ public class Exercise1 {
 					}
 				}
 
-				int r = (rand.nextInt(1000) % (int) (1/p));
-				if (r != 0 || isInitialOrFinalState) // empty slots get assigned a random value 1-4
+				int r = (rand.nextInt(100));
+				if (r > p || isInitialOrFinalState) // empty slots get assigned a random value 1-4
 					board[x][y] = rand.nextInt(4) + 1;
 	    		else								 // randomly occupy slots ( 0 )
 	    			board[x][y] = 0; 
 	    	}
 	  	}
 	}
-
+	
+	
+	/**
+	 * This method has remained from when the project was written in C,
+	 * and the 2d array was set with malloc().
+	 * Some other methods still use it, so why change it?
+	 */
 	private static int boardGet(int X, int Y)
 	{
 		return board[X][Y];
 	}
 	
+	
+	/**
+	 * Prints the board layout, including the robot and final states
+	 * @param finalStates the final - goal states
+	 */
 	private static void printBoard(Coords[] finalStates)
 	{
 		int finalStateValues[] = new int[finalStates.length];
@@ -93,6 +118,14 @@ public class Exercise1 {
 		
 	}
 	
+	
+	/**
+	 * Calculates the move cost between two positions
+	 * @param initial the initial position
+	 * @param X of the next move's position
+	 * @param Y of the next move's position
+	 * @return the cost of the move
+	 */
 	private static float moveCost(Coords initial, int X, int Y)
 	{
 		float cost = Math.abs( (boardGet(initial.X, initial.Y) - boardGet(X, Y)) );
@@ -108,6 +141,12 @@ public class Exercise1 {
 		return cost;
 	}
 
+	
+	/**
+	 * Gets the neighboring free blocks (not walls) from a set of coordinates
+	 * @param curr the coordinates that the neighboring free blocks derive from
+	 * @return an ArrayList with the neighboring blocks (as Coords objects)
+	 */
 	private static ArrayList<Coords> getNearestFreeBlocks(Coords curr)
 	{
 		ArrayList<Coords> nearestBlocks = new ArrayList<Coords>();
@@ -129,6 +168,13 @@ public class Exercise1 {
 		return nearestBlocks;
 	}
 	
+	
+	/**
+	 * Prints a given path, used to print the path that UCS and A* return
+	 * @param path the path to be printed
+	 * @param isAStar whether heuristic cost is returned as well or not
+	 * @return a string with the path. Each node/step is separated by "\n"
+	 */
 	private static String printPath(ArrayList<Coords> path, boolean isAStar)
 	{
 		String toString = "";
@@ -145,6 +191,14 @@ public class Exercise1 {
 		return toString;
 	}
 	
+	
+	/**
+	 * Checks if a set of Coordinates is in an ArrayList.
+	 * Used to find whether a node has been visited or not.
+	 * @param list ArrayList of Coordinates to check against.
+	 * @param toCheck the set that needs to be checked.
+	 * @return whether the node has been visited or not.
+	 */
 	private static boolean isInPathList(ArrayList<Coords> list, Coords toCheck)
 	{
 		for (int i = 0; i < list.size(); i++)
@@ -157,6 +211,14 @@ public class Exercise1 {
 		return false;
 	}
 	
+	
+	/**
+	 * Returns a deep copy of a path, with the inclusion of a new Node.
+	 * Used to extend a path to multiple new paths (for multiple free blocks).
+	 * @param oldPath the path to be deep copied.
+	 * @param newNode the node that will be added to the copied path.
+	 * @return the deep copy of the old path, with the new node added.
+	 */
 	private static ArrayList<Coords> extendPath(ArrayList<Coords> oldPath, Coords newNode)
 	{
 		ArrayList<Coords> newPath = new ArrayList<Coords>();
@@ -169,7 +231,12 @@ public class Exercise1 {
 		return newPath;
 	}
 	
-	// UCS search algorithm
+	
+	/**
+	 * Implementation of the UCS search algorithm
+	 * @param finalStates the final - goal states
+	 * @return the best path that can be followed
+	 */
 	private static ArrayList<Coords> UCS(Coords finalStates[])
 	{
 		ArrayList<ArrayList<Coords>> activePaths = new ArrayList<ArrayList<Coords>>();
@@ -233,8 +300,15 @@ public class Exercise1 {
 			activePaths.remove(lowestCostIndex); // Remove parent node
 		}
 	}
+
 	
-	// Calculates the heuristic cost from a set of coords to the final state
+	/**
+	 * Calculates the heuristic cost from a set of coords to the final state.
+	 * The cost derives from the function horizontalMoves + diagonalMoves/2.
+	 * @param initial node that the heuristic cost should be calculated from.
+	 * @param finalStates the final - goal states.
+	 * @return the heuristic cost of the node in question.
+	 */
 	public static float heuristicCost(Coords initial, Coords[] finalStates)
 	{
 		// get lowest heuristic cost
@@ -264,10 +338,11 @@ public class Exercise1 {
 		return lowestCost;
 	}
 	
+
 	/**
-	 *  A* search algorithm
-	 * @param finalStates
-	 * @return
+	 * Implementation of the A* search algorithm.
+	 * @param finalStates the final - goal states
+	 * @return the best path that can be followed
 	 */
 	public static ArrayList<Coords> AStar(Coords[] finalStates)
 	{
@@ -332,6 +407,10 @@ public class Exercise1 {
 		}
 	}
 	
+	
+	/**
+	 * The main game loop
+	 */
 	public static void main(String[] args)
 	{
 		Scanner in = new Scanner(System.in);
@@ -339,7 +418,7 @@ public class Exercise1 {
 		System.out.print("Input the size of the array: ");
 		N = in.nextInt();
 		System.out.print("Input the cell occupation possibility (%): ");
-		p = in.nextDouble() / 100;
+		p = in.nextInt();
 		
 		System.out.print("Input the robot's position (X): ");
 		int X = in.nextInt();

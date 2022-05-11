@@ -1,17 +1,24 @@
+package Lab2;
 /* BALLOS   EVANGELOS    4739
  * GKIOULIS KONSTANTINOS 4654
  */
 
+
 import java.util.Scanner;
 import java.util.Arrays;
 
-
+/**
+ * A game of Connect Four using a simple implementation of a MiniMax algorithm.
+ * @author cs04739
+ * @author cs04654
+ */
 public class ConnectFour
 {
 	// Storing array as [col][row]
 	private static char[][] board;
 	private static int M, N, K, depth;
 	private static Scanner in = new Scanner(System.in);
+	
 	
 	/**
 	 * Creates the board
@@ -25,12 +32,12 @@ public class ConnectFour
 		}
 	}
 	
+	
 	/**
-	 * Prints the board
+	 * Prints the board to stdout
 	 */
 	public static void PrintBoard()
 	{
-		// Hahaha String manipulation go brrr
 		String out = "";
 		for (int y = 0; y < M ; y++)
 		{
@@ -47,6 +54,7 @@ public class ConnectFour
 		out += "\n";
 		System.out.println(out);
 	}
+	
 	
 	/**
 	 * Adds player indicator to
@@ -89,6 +97,7 @@ public class ConnectFour
 		out += "\n";
 		System.out.println(out);
 	}
+	
 	
 	/**
 	 * Checks whether there is a victory horizontally
@@ -336,6 +345,7 @@ public class ConnectFour
 		return false;
 	}
 	
+	
 	/**
 	 * Checks if the board is filled.
 	 * Essentially it checks the first row only.
@@ -353,9 +363,11 @@ public class ConnectFour
 		return true;
 	}
 	
+	
 	/**
+	 * Calculates the best move for the Robot (MiniMax algorithm).
 	 * With the help of the sponsor of this video, MINIMAX!!!
-	 * @return
+	 * @return the best available move there is for the robot.
 	 */
 	public static int BestMove()
 	{
@@ -368,8 +380,9 @@ public class ConnectFour
 		return bestMove;
 	}
 	
+	
 	/**
-	 * Plays the game, taking turns between the MiniMax (O) and Player (X)
+	 * Plays the game, taking turns between the MiniMax (O) and Player (X).
 	 */
 	public static void PlayGame()
 	{
@@ -405,6 +418,10 @@ public class ConnectFour
 		}
 	}
 	
+	
+	/**
+	 * The main game loop
+	 */
 	public static void main(String[] Args)
 	{	
 		depth = 7;
@@ -423,8 +440,6 @@ public class ConnectFour
 		AddToRow('O', 3);
 		AddToRow('X', 3);
 		PrintBoard();
-		//System.out.println(BestMove());
-		//AddToRow('O', BestMove());
 		
 		in.close();
 	}
