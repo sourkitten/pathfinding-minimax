@@ -359,10 +359,13 @@ public class ConnectFour
 	 */
 	public static int BestMove()
 	{
+		long startTime = System.nanoTime();
 		Node parent = new Node(board, M, N, K, true);
-		parent.SetParentNode(true);
-		return parent.MiniMax(depth);
-		//return parent;
+		parent.SetParentNode(true); 
+		int bestMove = parent.MiniMax(depth);
+		long endTime = System.nanoTime();
+	    System.out.println("Move Calculation Cost: " + ((endTime - startTime) / 1000000) + " ms\n");
+		return bestMove;
 	}
 	
 	/**
@@ -404,14 +407,14 @@ public class ConnectFour
 	
 	public static void main(String[] Args)
 	{	
-		depth = 3;
+		depth = 7;
 		System.out.print("Input the length of the board (N): ");
 		N = in.nextInt();
 		System.out.print("Input the height of the board (M): ");
 		M = in.nextInt();
 		System.out.print("Input the amount required to win (K): ");
 		K = in.nextInt();
-		System.out.println();
+		System.out.println("Current MiniMax depth: " + depth + ".  Cost is: " + M + "^" + depth + ".\n");
 		MakeBoard();
 		PrintBoard();
 		PlayGame();
