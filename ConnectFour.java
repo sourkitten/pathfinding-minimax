@@ -359,7 +359,7 @@ public class ConnectFour
 	 */
 	public static int BestMove()
 	{
-		Node parent = new Node(board, M, N, K, false);
+		Node parent = new Node(board, M, N, K, true);
 		parent.SetParentNode(true);
 		return parent.MiniMax(depth);
 		//return parent;
@@ -404,7 +404,7 @@ public class ConnectFour
 	
 	public static void main(String[] Args)
 	{	
-		depth = 2;
+		depth = 3;
 		System.out.print("Input the length of the board (N): ");
 		N = in.nextInt();
 		System.out.print("Input the height of the board (M): ");

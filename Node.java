@@ -75,7 +75,7 @@ public class Node
 
 	public Node(char[][] board, int m, int n, int k, boolean max)
 	{
-		if (max) {
+		if (!max) {
 			player = 'O';
 		} else {
 			player = 'X';
@@ -359,7 +359,7 @@ public class Node
 		// Check if player is victorious
 		if (CheckVictory(K, lastMove))
 		{
-			if (max) {
+			if (!max) {
 				return 1;
 			} else {
 				return -1;
@@ -409,8 +409,8 @@ public class Node
 				childIndex = children[i];
 			}
 		}
-		
-		// TODO first node should return branch NOT VALUE
+
+
 		if (isParent)
 		{
 			return childIndex;
