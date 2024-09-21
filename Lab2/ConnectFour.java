@@ -1,5 +1,5 @@
 package Lab2;
-/* BALLOS   EVANGELOS    4739
+/* BALLOU   IVI	         4739 
  * GKIOULIS KONSTANTINOS 4654
  */
 
@@ -9,8 +9,8 @@ import java.util.Arrays;
 
 /**
  * A game of Connect Four using a simple implementation of a MiniMax algorithm.
- * @author cs04739
- * @author cs04654
+ * @author ivi ballou
+ * @author gkioulis konstantinos
  */
 public class ConnectFour
 {
@@ -374,7 +374,7 @@ public class ConnectFour
 		long startTime = System.nanoTime();
 		Node parent = new Node(board, M, N, K, true);
 		parent.SetParentNode(true); 
-		int bestMove = parent.MiniMax(depth);
+		int bestMove = parent.MiniMax(depth); // grab best move using minimax
 		long endTime = System.nanoTime();
 	    System.out.println("Move Calculation Cost: " + ((endTime - startTime) / 1000000) + " ms\n");
 		return bestMove;

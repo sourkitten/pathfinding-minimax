@@ -1,5 +1,5 @@
 package Lab2;
-/* BALLOS   EVANGELOS    4739
+/* BALLOU   IVI          4739
  * GKIOULIS KONSTANTINOS 4654
  */
 
@@ -413,8 +413,7 @@ public class Node
 			Node child = new Node(board, M, N, K, !max);
 			child.AddToRow(children[i]);
 			child.lastMove = children[i];
-			childrenResults[i] = child.MiniMax(currentDepth - 1);
-			
+			childrenResults[i] = child.MiniMax(currentDepth - 1); // this ensures the entirety of a child is fully explored before moving on to the next child
 		}
 		
 		// Compare children nodes' scores and find the min / max (depending on the player)

@@ -1,5 +1,5 @@
 package Lab1;
-/* BALLOS   EVANGELOS    4739
+/* BALLOU   IVI          4739
  * GKIOULIS KONSTANTINOS 4654
  */
 
